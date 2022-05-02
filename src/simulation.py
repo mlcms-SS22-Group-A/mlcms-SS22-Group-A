@@ -2,15 +2,26 @@ import math
 import numpy as np
 
 
-def pedestrian(matrix, row, column, trow, tcolumn):
+def pedestrianupdate(matrix, row, column, trow, tcolumn):
+    """
+    This function serves as a helper to the update() function (see below) to determine the state of cellular
+    automaton at next time step, given the current state, position of pedestrian and target.
+
+    :param matrix: Current state of cellular automaton
+    :param row: Current row of pedestrian
+    :param column: Current column of pedestrian
+    :param trow: The row at which target is stored
+    :param tcolumn: The column at which target is stored
+    """
     neighbours = []
+    m_row, m_col = matrix.shape
     if row != 0:
         neighbours.append([matrix[row - 1][column], row - 1, column])
-    elif row != matrix.shape - 1:
+    if row != m_row - 1:
         neighbours.append([matrix[row + 1][column], row + 1, column])
-    elif column != 0:
+    if column != 0:
         neighbours.append([matrix[row][column - 1], row, column - 1])
-    elif column != matrix[0].shape - 1:
+    if column != m_col - 1:
         neighbours.append([matrix[row][column + 1], row, column + 1])
 
     for i in range(0, len(neighbours)):
@@ -28,6 +39,14 @@ def pedestrian(matrix, row, column, trow, tcolumn):
 
 
 def update(matrix, pedestrians, trow, tcolumn):
-    for i in range(0, pedestrians.shape):
-        pedestrian(matrix, pedestrians[i][0], pedestrians[i][1], trow, tcolumn)
-    return
+    """
+    This function updates the state of cellular automaton such that all pedestrians move towards the target.
+
+    :param matrix: Current state of cellular automaton
+    :param pedestrians: List of pedestrians
+    :param trow: The row at which target is stored
+    :param tcolumn: The column at which target is stored
+    """
+    row, _ = pedestrians.shape
+    for i in range(0, row):
+        pedestrianupdate(matrix, pedestrians[i][0], pedestrians[i][1], trow, tcolumn)
