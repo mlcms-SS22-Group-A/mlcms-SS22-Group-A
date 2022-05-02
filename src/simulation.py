@@ -2,7 +2,7 @@ import math
 import numpy as np
 
 
-def pedestrian(row, column, matrix, trow, tcolumn):
+def pedestrian(matrix, row, column, trow, tcolumn):
     neighbours = []
     if row != 0:
         neighbours.append([matrix[row - 1][column], row - 1, column])
@@ -27,9 +27,7 @@ def pedestrian(row, column, matrix, trow, tcolumn):
     matrix[neighbours[min_distance_index][1]][neighbours[min_distance_index][2]] = 1
 
 
-def update(matrix, trow, tcolumn):
-    for i in range(0, matrix.shape):
-        for j in range(0, matrix[0].shape):
-            if matrix[i][j] == 1:
-                pedestrian(i, j, matrix, trow, tcolumn)
+def update(matrix, pedestrians, trow, tcolumn):
+    for i in range(0, pedestrians.shape):
+        pedestrian(matrix, pedestrians[i][0], pedestrians[i][1], trow, tcolumn)
     return
