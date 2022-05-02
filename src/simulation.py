@@ -14,7 +14,7 @@ def pedestrian(matrix, row, column, trow, tcolumn):
         neighbours.append([matrix[row][column + 1], row, column + 1])
 
     for i in range(0, len(neighbours)):
-        if neighbours[i][0] == 2:
+        if neighbours[i][0] == 3:
             return
 
     distances = []
