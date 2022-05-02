@@ -16,7 +16,7 @@ def parser(X):
 
     numTargets, _ = targets.shape
 
- #   if numTargets != 1:
- #       raise ValueError("Our implementation does not support multiple targets yet.")
+    if numTargets != 1:
+        raise ValueError("Our implementation does not support multiple targets yet.")
 
     return rows, cols, pedestrians, obstacles, targets
