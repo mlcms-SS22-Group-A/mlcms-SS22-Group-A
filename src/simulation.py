@@ -26,6 +26,7 @@ def pedestrianupdate(matrix, row, column, trow, tcolumn):
 
     for i in range(0, len(neighbours)):
         if neighbours[i][0] == 3:
+            matrix[row][column]=0
             return
 
     distances = []
@@ -33,7 +34,11 @@ def pedestrianupdate(matrix, row, column, trow, tcolumn):
         distances.append(math.sqrt((neighbours[i][1] - trow) ** 2 + (neighbours[i][2] - tcolumn) ** 2))
 
     min_distance_index = np.array(distances).argmin()
-
+    minNeighbor =  matrix[neighbours[min_distance_index][1]][neighbours[min_distance_index][2]]
+    while minNeighbor == 2:
+        distances[min_distance_index] =distances[np.array(distances).argmax()]+1
+        min_distance_index = np.array(distances).argmin()
+        minNeighbor =  matrix[neighbours[min_distance_index][1]][neighbours[min_distance_index][2]]
     matrix[row][column] = 0
     matrix[neighbours[min_distance_index][1]][neighbours[min_distance_index][2]] = 1
 
