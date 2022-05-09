@@ -94,10 +94,9 @@ def update(state_matrix, ped, distance_matrix, target, available_movement, eucli
     # since we fill the euclidean distances matrix throughout the simulation, the update method is only required if
     # euclidean distances are used
     if euclidean:
-        update_distances(available_neighbours, target, distance_matrix,False)
-
     # this commented out section refers to a try of adding a cost function to avoid pedestrian collision
-    """
+  
+     """
     # compute the euclidean distances from the available neighbouring cells to the target for
     # the current pedestrian
     costs = np.empty(shape=distance_matrix.shape, dtype=float) # we only use this for euclidean right now TODO
@@ -108,8 +107,8 @@ def update(state_matrix, ped, distance_matrix, target, available_movement, eucli
                 continue
             distance = math.sqrt((available_neighbours[i][0] - ped_list[j].x) ** 2 + (available_neighbours[i][1] - ped_list[j].y) ** 2)
             if distance < MAX_DISTANCE:
-                costs[available_neighbours[i][0]][available_neighbours[i][1]] += math.exp(1 / (distance ** 2 - MAX_DISTANCE ** 2))
-    """
+                costs[available_neighbours[i][0]][available_neighbours[i][1]] += math.exp(1 / (distance ** 2 - MAX_DISTANCE     ** 2))
+     """
 
     # for each neighbour take their distance and append them into a list where each element looks like following:
     # (distance_of_neighbour_to_target, [neighbour.x, neighbour.y])

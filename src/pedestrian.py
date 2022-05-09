@@ -2,7 +2,7 @@ import numpy as np
 
 
 class Pedestrian:
-    def __init__(self, cell, distance_to_target, speed=1.6, target_reached=False):
+    def __init__(self, cell, distance_to_target, speed=1.6, target_reached=False, age=0):
         """
         Initializes a new pedestrian object with the given parameters
         :param cell: the initial position [x, y] of pedestrian
@@ -11,6 +11,7 @@ class Pedestrian:
         :param target_reached: boolean to check whether the pedestrian has reached the target
         """
         [self.x, self.y] = cell
+        self.age=age
         self.speeds_measured = []
         self.start_position = cell
         self.distance_to_target = distance_to_target

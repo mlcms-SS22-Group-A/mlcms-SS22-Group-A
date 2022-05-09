@@ -143,7 +143,7 @@ def euclidean_tasks(scenario_number):
                 if color == orange:
                     scr.blit(tgt, [(margin + width) * column + margin, (margin + height) * row + margin])
 
-        pygame.image.save(scr, "output/task" + str(scenario_number) + "/timestep" + str(timestep) + ".png")
+      #  pygame.image.save(scr, "output/task" + str(scenario_number) + "/timestep" + str(timestep) + ".png")
 
         # update positions of pedestrians, after that update their distance to target
         for ped in ped_list:

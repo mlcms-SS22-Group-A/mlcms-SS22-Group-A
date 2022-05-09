@@ -1,6 +1,5 @@
 import numpy as np
 import pygame
-
 from src.read_file import read_file
 from src.parser import parser
 from src.pedestrian import Pedestrian
@@ -8,7 +7,16 @@ from src.dijkstra import dijkstra
 from src.update import update
 from src.create_input import create_input_random
 
-
+PED_MAP={"0":(0.6),
+         "1":(1.2),
+         "2":(1.6),
+         "3":(1.52),
+         "4":(1.49),
+         "5":(1.45),
+         "6":(1.3),
+         "7":(1.1),
+         "8":(0.67)      
+         }
 def dijkstra_tasks(scenario_number,is_measuring):
     """
     simulates the given task (which has the number scenario_number) using the dijkstra distances in the update scheme.
@@ -30,7 +38,12 @@ def dijkstra_tasks(scenario_number,is_measuring):
 
     if scenario_number == "5-6":
         speeds = np.random.uniform(low=1.2, high=1.4, size=len(pedestrians))
-
+    if scenario_number == "5-7":
+        speeds=np.empty(shape=len(pedestrians))
+        for i in range(0,len(pedestrians)):
+                       avg= PED_MAP[str(i%9)]
+                       speeds[i] = np.random.normal(loc=avg, scale=0.2, size=None)
+                       #speeds[i] = np.random.uniform(low,high,size=None)
     # initialize colors for further use
     # red for pedestrian, orange for target, purple for obstacle
     black = (0, 0, 0)
@@ -74,16 +87,16 @@ def dijkstra_tasks(scenario_number,is_measuring):
         # if no specific speed is given for a pedestrian, create one with a default value of 1.6 m/s
         if i >= speeds.shape[0]:
             new_pedestrian = Pedestrian(pedestrians[i], distance_dijkstra[pedestrians[i][0]][pedestrians[i][1]],
-                                        1.6, np.array_equal(pedestrians[i], targets[0]))
+                                        1.6, np.array_equal(pedestrians[i], targets[0]),i%9)
         else:
             new_pedestrian = Pedestrian(pedestrians[i], distance_dijkstra[pedestrians[i][0]][pedestrians[i][1]],
-                                        speeds[i], np.array_equal(pedestrians[i], targets[0]))
+                                        speeds[i], np.array_equal(pedestrians[i], targets[0]),i%9)
         # add the created pedestrian object to the list
         ped_list.append(new_pedestrian)
 
     # sort pedestrians according to their distance to target
     ped_list = list(sorted(ped_list, key=lambda x: x.get_distance_to_target()))
-
+ 
     # this will be set to true if either every pedestrian has reached the target or user decided to close the window
     finished = False
     # counter for the timestep
@@ -180,8 +193,8 @@ def dijkstra_tasks(scenario_number,is_measuring):
                 average_speed += np.mean(np.array(ped.speeds_measured))
                 counter += 1
         average_speed /= counter
-        print(average_speed)
+#        print(average_speed)
         
     # close the screen and shutdown simulation
     pygame.quit()
-    return average_speed
+    return (ped_list,average_speed)
