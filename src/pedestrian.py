@@ -9,6 +9,7 @@ class Pedestrian:
         :param distance_to_target: the distance of the pedestrian to target
         :param speed: speed of the pedestrian in m/s
         :param target_reached: boolean to check whether the pedestrian has reached the target
+        :param age: age of the pedestrian
         """
         [self.x, self.y] = cell
         self.age=age

@@ -50,9 +50,10 @@ def move(state_matrix, ped, cell, available_movement, timestep):
         ped.x = curr_x
         ped.y = curr_y
 
-        if (ped.y == MEASURING_POINT_1 or ped.y == MEASURING_POINT_2) and (timestep > 10 ):
-            ped.speeds_measured.append(euclidean(ped.x, ped.y, ped.start_position[0], ped.start_position[1]) / (timestep+1))
-           
+        # measuring point reached, append current speed to the speeds_measured list (speed = distance / time)
+        if (ped.y == MEASURING_POINT_1 or ped.y == MEASURING_POINT_2) and (timestep > 10):
+            ped.speeds_measured.append(euclidean(ped.x, ped.y, ped.start_position[0], ped.start_position[1]) /
+                                       (timestep + 1))
         
         # empty the previous cell
         state_matrix[prev_x][prev_y] = 0
@@ -94,9 +95,10 @@ def update(state_matrix, ped, distance_matrix, target, available_movement, eucli
     # since we fill the euclidean distances matrix throughout the simulation, the update method is only required if
     # euclidean distances are used
     if euclidean:
+        update_distances(available_neighbours, target, distance_matrix)
+
     # this commented out section refers to a try of adding a cost function to avoid pedestrian collision
-  
-     """
+    """
     # compute the euclidean distances from the available neighbouring cells to the target for
     # the current pedestrian
     costs = np.empty(shape=distance_matrix.shape, dtype=float) # we only use this for euclidean right now TODO
