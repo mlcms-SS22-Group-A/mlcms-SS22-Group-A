@@ -28,16 +28,17 @@ def place_ped(file_location, x_location, y_location):
         scenario_dict = json.load(f_read)
     f_read.close()
 
-    # scenario_dict["scenario"]["topography"]["dynamicElements"].append("mert")
-    # scenario_dict
+    with open("pedestrian.json", 'r') as f_read:
+        ped= json.load(f_read)
+    f_read.close()
 
-    # arr =  scenario_dict["scenario"]["topography"]["dynamicElements"]
-    # arr.append("mert")
-    # scenario_dict["scenario"]["topography"]["dynamicElements"] = arr
+    scenario_dict["scenario"]["topography"]["dynamicElements"].append(ped)
+  #  with open(file_location, 'w') as f_write:
+   #     json.dump(scenario_dict, f_write, indent=2)
 
-    with open(file_location, 'w') as f_write:
-        json.dump(scenario_dict, f_write, indent=2)
-
-    f_write.close()
+   # f_write.close()
+    with open("Sample.scenario", "w") as outfile:
+        json.dump(scenario_dict, outfile, indent=2)
+    outfile.close()
 
 read_opts()
