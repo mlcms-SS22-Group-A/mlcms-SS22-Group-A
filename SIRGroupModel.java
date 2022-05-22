@@ -194,10 +194,6 @@ public class SIRGroupModel extends AbstractGroupModel<SIRGroup> {
 				List<Pedestrian> pedList = lcg.getObjects(p.getPosition(), attributesSIRG.getInfectionMaxDistance());
 				// loop over the neighbors that are closer than the max infection distance
 				// and set infected if we are close
-				// TODO remove debug prints
-				System.out.println("peds near the ped with id " + p.getId() + " : " + pedList.size());
-				System.out.println("before: " + c.getElements().size());
-
 				for(Pedestrian p_neighbor : pedList) {
 					if(p == p_neighbor || getGroup(p_neighbor).getID() != SIRType.ID_INFECTED.ordinal())
 						continue;
