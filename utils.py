@@ -39,7 +39,7 @@ def plot_phase_portrait(A, X, Y, title):
     ax0.streamplot(X, Y, U, V, density=[0.5, 1])
     ax0.set_title(title)
     ax0.set_aspect(1)
-    return ax0
+    return fig, ax0
 
 
 def plot_bifurcation_diagram(equation, var, x_lim):
