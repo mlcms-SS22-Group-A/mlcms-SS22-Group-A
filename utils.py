@@ -44,7 +44,7 @@ def plot_phase_portrait(A, X, Y, title):
     return fig, ax0
 
 
-def plot_bifurcation_diagram(equation, var, alpha , x_lim):
+def plot_bifurcation_diagram(equation, var, alpha , x_lim , numsys):
     """
     Plots a bifurcation diagram of the given equation, w.r.t var and within the given x_lim.
     """
@@ -60,10 +60,10 @@ def plot_bifurcation_diagram(equation, var, alpha , x_lim):
         if plot is None:
             if deriv.doit().subs({x:solution.evalf(subs={alpha:4}) }) > 0:
 
-                plot = sy.plot(solution, line_color = "red", show=False, xlim=x_lim, ylim=[-1.25, 1.25], axis_center=(x_lim[0], -1.25),
+                plot = sy.plot(solution, line_color = "red",title="Dynamical System "+numsys, show=False, xlim=x_lim, ylim=[-1.25, 1.25], axis_center=(x_lim[0], -1.25),
                            xlabel=r"$\alpha$", ylabel=r"$x_0$", label="unstable")
             else:
-                plot = sy.plot(solution, line_color="blue", show=False, xlim=x_lim, ylim=[-1.25, 1.25], axis_center=(x_lim[0], -1.25),
+                plot = sy.plot(solution, line_color="blue", title="Dynamical System "+numsys, show=False, xlim=x_lim, ylim=[-1.25, 1.25], axis_center=(x_lim[0], -1.25),
                               xlabel=r"$\alpha$", ylabel=r"$x_0$", label="stable")
 
         else:
