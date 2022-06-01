@@ -4,10 +4,12 @@ from utils import plot_phase_portrait
 def task_1_plot_reconstructions(X, Y, alphas, save_figure):
     """
     Plots the phase portraits given in the figre 2.5 in the book of Kuznetsov 
-    also described in the exercise sheet. 
-    :params alphas: alpha variables of the parameterized matrix given on the exercise sheet. 
+    also described in the exercise sheet.
+    :param  X: notebook parameter X 
+    :param Y: notebook parameter Y
+    :param alphas: alpha variables of the parameterized matrix given on the exercise sheet. 
                     A_alpha = [ [alpha, (-)alpha], [-0.25, 0] ]
-    :params save_figure: boolean parameter, saves the figure if True
+    :param save_figure: boolean parameter, saves the figure if True
     """
     if len(alphas) != 5:
         raise ValueError("alphas should include an alpha for all the 5 constructions!")
