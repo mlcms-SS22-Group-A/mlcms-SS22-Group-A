@@ -28,6 +28,9 @@ def solve_euler(f_ode, y0, time):
 def plot_phase_portrait(A, X, Y, title):
     """
     Plots a linear vector field in a streamplot, defined with X and Y coordinates and the matrix A.
+    :param A: the matrix that defines the linear dynamical system
+    :param X: x-coordinates of the linear system
+    :param Y: y-coordinates of the linear system
     """
     UV = A @ np.row_stack([X.ravel(), Y.ravel()])
     U = UV[0, :].reshape(X.shape)
@@ -47,6 +50,10 @@ def plot_phase_portrait(A, X, Y, title):
 def plot_bifurcation_diagram(equation, var, alpha , x_lim , numsys):
     """
     Plots a bifurcation diagram of the given equation, w.r.t var and within the given x_lim.
+    :param equation: the right hand side of the ordinary differential equation d/dt x = f_ode(x(t)).
+    :param var: the variable that we want to solve the equation w.r.t.
+    :param x_lim: The range of the plot on the x-axis for alpha variable.
+    :returns: sy plot to save the figure in the notebook
     """
     # solve equation = 0 w.r.t var
     solutions = sy.solveset(equation, var)
@@ -75,6 +82,3 @@ def plot_bifurcation_diagram(equation, var, alpha , x_lim , numsys):
     plot.legend = True
     plot.show()
     return plot
-
-
-
