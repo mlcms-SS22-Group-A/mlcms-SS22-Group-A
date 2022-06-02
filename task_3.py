@@ -1,5 +1,4 @@
 import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
 
 
 def andronov_hopf(alpha, x1, x2):
@@ -12,7 +11,8 @@ def andronov_hopf(alpha, x1, x2):
     :param x2: Second dimension input
     :returns: (d/dt x1, d/dt x2) time derivatives of the dimensions
     """
-    return alpha*x1 - x2 - x1*(x1**2 + x2**2), x1 + alpha*x2 - x2*(x1**2 + x2**2)
+    return alpha * x1 - x2 - x1 * (x1 ** 2 + x2 ** 2), x1 + alpha * x2 - x2 * (x1 ** 2 + x2 ** 2)
+
 
 def task_3_plot_andronov_hopf_phase_diagrams(X, Y, alphas, save_figure):
     """
@@ -31,9 +31,8 @@ def task_3_plot_andronov_hopf_phase_diagrams(X, Y, alphas, save_figure):
         title = "\u03B1 = " + str(alpha) + "\n"
 
         # plot the figure
-        fig = plt.figure(figsize=(15, 15))
-        gs = gridspec.GridSpec(nrows=3, ncols=2, height_ratios=[1, 1, 2])
-        ax0 = fig.add_subplot(gs[0, 0])
+        fig = plt.figure(figsize=(10, 10))
+        ax0 = fig.add_subplot(1, 1, 1)
         ax0.streamplot(X, Y, U, V, density=[0.5, 1], color="b")
         ax0.set_title(title)
         ax0.set_aspect(1)

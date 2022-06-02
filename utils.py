@@ -1,9 +1,5 @@
-import numpy as np
-import sympy as sy
 import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
-from sympy import Symbol, Derivative
-
+import numpy as np
 
 # this is done to show a background grid while using sympy.plot
 plt.style.use('ggplot')
@@ -36,11 +32,8 @@ def plot_phase_portrait(A, X, Y, title):
     U = UV[0, :].reshape(X.shape)
     V = UV[1, :].reshape(X.shape)
 
-    fig = plt.figure(figsize=(15, 15))
-    gs = gridspec.GridSpec(nrows=3, ncols=2, height_ratios=[1, 1, 2])
-
-    #  Varying density along a streamline
-    ax0 = fig.add_subplot(gs[0, 0])
+    fig = plt.figure(figsize=(10, 10))
+    ax0 = fig.add_subplot(1, 1, 1)
     ax0.streamplot(X, Y, U, V, density=[0.5, 1])
     ax0.set_title(title)
     ax0.set_aspect(1)
