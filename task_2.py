@@ -8,9 +8,11 @@ plt.style.use('ggplot')
 
 def task_2_plot_bifurcation_diagram(equation, var, alpha, x_lim, numsys):
     """
-    Plots a bifurcation diagram of the given equation, w.r.t var and within the given x_lim.
-    :param equation: the right hand side of the ordinary differential equation d/dt x = f_ode(x(t)).
-    :param var: the variable that we want to solve the equation w.r.t.
+    Plots a bifurcation diagram of the given equation, w.r.t var and within the given x_lim
+    :param numsys: the number of the dynamic system
+    :param alpha: the symbol of alpha
+    :param equation: the right-hand side of the ordinary differential equation d/dt x = f_ode(x(t))
+    :param var: the variable that we want to solve the equation w.r.t
     :param x_lim: The range of the plot on the x-axis for alpha variable.
     :returns: sy plot to save the figure in the notebook
     """
@@ -18,7 +20,6 @@ def task_2_plot_bifurcation_diagram(equation, var, alpha, x_lim, numsys):
     solutions = sy.solveset(equation, var)
 
     # plot the solutions
-    first = True
     plot = None
     x = var
     for solution in solutions:
@@ -37,7 +38,6 @@ def task_2_plot_bifurcation_diagram(equation, var, alpha, x_lim, numsys):
                 plot.extend(sy.plot(solution, line_color="red", show=False, label="unstable"))
             else:
                 plot.extend(sy.plot(solution, line_color="blue", show=False, label="stable"))
-
-    plot.legend = True
+    plot.legend()
     plot.show()
     return plot

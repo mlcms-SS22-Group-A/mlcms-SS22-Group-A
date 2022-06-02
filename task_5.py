@@ -50,7 +50,7 @@ def model(t, y, mu0, mu1, beta, A, d, nu, b):
     S, I, R = y[:]
     m = mu(b, I, mu0, mu1)
 
-    dSdt = A - d * S - beta * S * I / (S + I + R)  # add the correct model here
+    dSdt = A - d * S - beta * S * I / (S + I + R)
     dIdt = -(d + nu) * I - m * I + beta * S * I / (S + I + R)
     dRdt = m * I - d * R
 

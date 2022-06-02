@@ -37,4 +37,4 @@ def task_3_plot_andronov_hopf_phase_diagrams(X, Y, alphas, save_figure):
         ax0.set_title(title)
         ax0.set_aspect(1)
         if save_figure:
-            fig.savefig("task3_andronov_hopf_alpha_" + str(alpha) + ".pdf")
+            fig.savefig("/figures/task3_andronov_hopf_alpha_" + str(alpha) + ".pdf")

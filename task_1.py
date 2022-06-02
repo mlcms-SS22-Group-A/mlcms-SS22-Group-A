@@ -44,4 +44,4 @@ def task_1_plot_reconstructions(X, Y, alphas, save_figure):
         fig, ax0 = plot_phase_portrait(A, X, Y, title)
         ax0.set_aspect(1)
         if save_figure:
-            fig.savefig(title + ".pdf")
+            fig.savefig("/figures/" + title + ".pdf")
