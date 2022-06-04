@@ -49,6 +49,12 @@ def task_3_plot_andronov_hopf_phase_diagrams(X, Y, alphas, save_figure):
 
 
 def plot_andronov_hopf_orbits(start_position_1, start_position_2):
+    """
+    This method solves the andronov hopf initial value problem given the starting point of the trajectory,
+    then plots the trajectory integrated forward in time in a 3D space, different trajectories are colored
+    differently :param start_position_1: starting point of first trajectory :param start_position_2: starting point
+    of second trajectory
+    """
     # solve the ODEs w.r.t to time and position
     sol = scipy.integrate.solve_ivp(lambda t, y: andronov_hopf(1.0, y[0], y[1]), (0, 10), start_position_1)
     sol_ = scipy.integrate.solve_ivp(lambda t, y: andronov_hopf(1.0, y[0], y[1]), (0, 10), start_position_2)
@@ -66,6 +72,11 @@ def plot_andronov_hopf_orbits(start_position_1, start_position_2):
 
 
 def plot_cusp_bifurcation():
+    """
+    This method samples (alpha_1, alpha_2) points and solves the cusp ODE according to x, then plots the (x, alpha_1,
+    alpha_2) points to create a bifurcation surface.
+    """
+    # create a symbol for x
     x = sy.symbols("x")
     # create sample points (alpha_1, alpha_2)
     sample_points = [(x_, y_) for x_ in np.arange(-5.0, 5.0, 0.5) for y_ in np.arange(-5.0, 5.0, 0.5)]
@@ -81,4 +92,5 @@ def plot_cusp_bifurcation():
     for idx, _ in enumerate(sample_points):
         solution = sy.solveset(sample_points[idx][0] + sample_points[idx][1] * x - x ** 3, x)
         ax0.scatter(sample_points[idx][0], sample_points[idx][1], list(solution)[0], color="blue")
+    # change the look direction to get a better view of the resulting surface
     ax0.view_init(azim=95)
