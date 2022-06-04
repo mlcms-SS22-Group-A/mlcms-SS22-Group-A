@@ -17,27 +17,33 @@ def task_2_plot_bifurcation_diagram(equation, var, alpha, x_lim, numsys):
     :returns: sy plot to save the figure in the notebook
     """
     # solve equation = 0 w.r.t var
-    solutions = sy.solveset(equation, var)
+    x = var
+    solutions = sy.solveset(equation, x)
 
     # plot the solutions
     plot = None
-    x = var
+    # for each solution of the above equation
     for solution in solutions:
+        # compute 2nd derivative for (un)stability check
         derivative = Derivative(equation, x)
         if plot is None:
+            # if 2nd derivative positive, unstable
             if derivative.doit().subs({x: solution.evalf(subs={alpha: 4})}) > 0:
                 plot = sy.plot(solution, line_color="red", title="Dynamical System " + numsys, show=False, xlim=x_lim,
                                ylim=[-1.25, 1.25], axis_center=(x_lim[0], -1.25), xlabel=r"$\alpha$", ylabel=r"$x_0$",
                                label="unstable")
             else:
+                # if 2nd derivative negative, stable
                 plot = sy.plot(solution, line_color="blue", title="Dynamical System " + numsys, show=False, xlim=x_lim,
                                ylim=[-1.25, 1.25], axis_center=(x_lim[0], -1.25), xlabel=r"$\alpha$", ylabel=r"$x_0$",
                                label="stable")
         else:
+            # if 2nd derivative positive, unstable
             if derivative.doit().subs({x: solution.evalf(subs={alpha: 4})}) > 0:
                 plot.extend(sy.plot(solution, line_color="red", show=False, label="unstable"))
+            # if 2nd derivative negative, stable
             else:
                 plot.extend(sy.plot(solution, line_color="blue", show=False, label="stable"))
-    plot.legend()
+    plot.legend = True
     plot.show()
     return plot

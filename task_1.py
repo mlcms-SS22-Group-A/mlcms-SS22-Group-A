@@ -1,5 +1,4 @@
-import numpy as np
-from utils import plot_phase_portrait
+from utils import *
 
 
 def task_1_plot_reconstructions(X, Y, alphas, save_figure):
@@ -12,6 +11,7 @@ def task_1_plot_reconstructions(X, Y, alphas, save_figure):
                     A_alpha = [ [alpha, (-)alpha], [-0.25, 0] ]
     :param save_figure: boolean parameter, saves the figure if True
     """
+    # exception handling
     if len(alphas) != 5:
         raise ValueError("alphas should include an alpha for all the 5 constructions!")
     # define titles for different cases
@@ -43,5 +43,6 @@ def task_1_plot_reconstructions(X, Y, alphas, save_figure):
         # plot the figure
         fig, ax0 = plot_phase_portrait(A, X, Y, title)
         ax0.set_aspect(1)
+        # save the figure if the according parameter is set
         if save_figure:
-            fig.savefig("/figures/" + title + ".pdf")
+            fig.savefig("./figures/" + title + ".pdf")

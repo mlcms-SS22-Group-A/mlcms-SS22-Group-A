@@ -24,6 +24,7 @@ def solve_euler(f_ode, y0, time):
 def plot_phase_portrait(A, X, Y, title):
     """
     Plots a linear vector field in a streamplot, defined with X and Y coordinates and the matrix A.
+    :param title:
     :param A: the matrix that defines the linear dynamical system
     :param X: x-coordinates of the linear system
     :param Y: y-coordinates of the linear system
