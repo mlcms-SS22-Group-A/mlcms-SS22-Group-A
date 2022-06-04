@@ -9,11 +9,11 @@ plt.style.use('ggplot')
 
 def andronov_hopf(alpha, x1, x2):
     """
-    Andronov-Hopf Bifurcation 
+    Andronov-Hopf Bifurcation
     d/dt x1 = alpha * x1 − x2 − x1 * (x1**2 + x2**2)
     d/dt x2 = x1 + alpha * x2 - x2 * (x1**2 + x2**2)
-    :param alpha: Parameter of the equation 
-    :param x1: First dimension input 
+    :param alpha: Parameter of the equation
+    :param x1: First dimension input
     :param x2: Second dimension input
     :returns: (d/dt x1, d/dt x2) time derivatives of the dimensions
     """
@@ -26,7 +26,7 @@ def task_3_plot_andronov_hopf_phase_diagrams(X, Y, alphas, save_figure):
     :param X: notebook parameter X
     :param Y: notebook parameter Y
     :param alphas: parameters that we want to evaluate and plot the phase diagrams
-    :param save_figure: boolean, if True the figures are saved 
+    :param save_figure: boolean, if True the figures are saved
     """
     # loop over the three different alpha values and plot them
     for alpha in alphas:
@@ -48,12 +48,13 @@ def task_3_plot_andronov_hopf_phase_diagrams(X, Y, alphas, save_figure):
             fig.savefig("./figures/task3_andronov_hopf_alpha_" + str(alpha) + ".pdf")
 
 
-def plot_andronov_hopf_orbits(start_position_1, start_position_2):
+def plot_andronov_hopf_orbits(start_position_1, start_position_2, save_fig):
     """
     This method solves the andronov hopf initial value problem given the starting point of the trajectory,
     then plots the trajectory integrated forward in time in a 3D space, different trajectories are colored
     differently :param start_position_1: starting point of first trajectory :param start_position_2: starting point
     of second trajectory
+    :param save_fig: boolean value. If True the figure is saved.
     """
     # solve the ODEs w.r.t to time and position
     sol = scipy.integrate.solve_ivp(lambda t, y: andronov_hopf(1.0, y[0], y[1]), (0, 10), start_position_1)
@@ -69,12 +70,15 @@ def plot_andronov_hopf_orbits(start_position_1, start_position_2):
     ax0.set_zlabel(r"$x_2$")
     ax0.legend()
     ax0.set_aspect(aspect="auto")
+    if save_fig:
+        fig.savefig("./figures/task3_plot_andronov_hopf_orbits.pdf")
 
 
-def plot_cusp_bifurcation():
+def plot_cusp_bifurcation(save_figure):
     """
     This method samples (alpha_1, alpha_2) points and solves the cusp ODE according to x, then plots the (x, alpha_1,
     alpha_2) points to create a bifurcation surface.
+    :param save_figure: boolean value. If set to True the figure is saved as pdf.
     """
     # create a symbol for x
     x = sy.symbols("x")
@@ -82,7 +86,7 @@ def plot_cusp_bifurcation():
     sample_points = [(x_, y_) for x_ in np.arange(-5.0, 5.0, 0.5) for y_ in np.arange(-5.0, 5.0, 0.5)]
 
     # prepare a 3d plot (alpha_1, alpha_2 bottom plane, x third direction)
-    plt.figure(figsize=(10, 10))
+    fig = plt.figure(figsize=(10, 10))
     ax0 = plt.axes(projection='3d')
     ax0.set_xlabel(r"$\alpha_1$")
     ax0.set_ylabel(r"$\alpha_2$")
@@ -92,5 +96,11 @@ def plot_cusp_bifurcation():
     for idx, _ in enumerate(sample_points):
         solution = sy.solveset(sample_points[idx][0] + sample_points[idx][1] * x - x ** 3, x)
         ax0.scatter(sample_points[idx][0], sample_points[idx][1], list(solution)[0], color="blue")
+    # for putting the label
+    solution = sy.solveset(sample_points[0][0] + sample_points[0][1] * x - x ** 3, x)
+    ax0.scatter(sample_points[0][0], sample_points[0][1], list(solution)[0], color="blue", label=r"solution space $(d/dt)x = 0$")
+    ax0.legend()
     # change the look direction to get a better view of the resulting surface
     ax0.view_init(azim=95)
+    if save_figure:
+        fig.savefig("./figures/task3_cusp_bifurcation.pdf")
