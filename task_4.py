@@ -60,8 +60,6 @@ def plot_logistic_map(iter_count):
     ax0.set_ylabel("x")
     ax0.scatter(r_plot, x_list, s=0.01)
     ax0.set_title("Iteration=" + str(iter_count))
-    # save the figure for later usage
-    fig.savefig("./figures/task3-logistic_map_" + str(iter_count) + ".pdf")
 
 
 def plot_lorenz_attractor(sigma, rho, beta, plot):

@@ -52,8 +52,9 @@ def plot_andronov_hopf_orbits(start_position_1, start_position_2, save_fig):
     """
     This method solves the andronov hopf initial value problem given the starting point of the trajectory,
     then plots the trajectory integrated forward in time in a 3D space, different trajectories are colored
-    differently :param start_position_1: starting point of first trajectory :param start_position_2: starting point
-    of second trajectory
+    differently
+    :param start_position_1: starting point of first trajectory
+    :param start_position_2: starting point of second trajectory
     :param save_fig: boolean value. If True the figure is saved.
     """
     # solve the ODEs w.r.t to time and position
@@ -77,7 +78,7 @@ def plot_andronov_hopf_orbits(start_position_1, start_position_2, save_fig):
 def plot_cusp_bifurcation(save_figure):
     """
     This method samples (alpha_1, alpha_2) points and solves the cusp ODE according to x, then plots the (x, alpha_1,
-    alpha_2) points to create a bifurcation surface.
+    alpha_2) points to create a bifurcation surface
     :param save_figure: boolean value. If set to True the figure is saved as pdf.
     """
     # create a symbol for x
