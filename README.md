@@ -1,3 +1,3 @@
 # mlcms-SS22-Group-A
 
-Each exercise can be found in its own branch, named according to the exercise number.
+Each task is divided into its own python notebook file, required calculations and plots are done in the according .py file. 
