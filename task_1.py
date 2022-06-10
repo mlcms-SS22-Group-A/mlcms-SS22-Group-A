@@ -31,6 +31,11 @@ def center_data(X):
     #return X_centered
 
 def reduce_dim_pca(X, k):
+    """
+    :param X: centered input data matrix X of shape (N,D)
+    :param k: the reduced dimension space 
+    :returns: reduced data matrix X_reduced of shape (N,k)
+    """
     # apply SVD 
     U, S, Vh = np.linalg.svd(X)
     N,D = X.shape
@@ -44,6 +49,19 @@ def reduce_dim_pca(X, k):
     U_trunc = U[:,:trunc_cols]
     S_trunc = S[:trunc_cols]
     
-    X_trunc = U_trunc[:, :trunc_cols] * S_trunc
+    X_reduced = U_trunc[:, :trunc_cols] * S_trunc
     
-    return X_trunc
+    return X_reduced
+
+def get_contained_energy_in_each_component(X):
+    """
+    :param X: centered input data matrix X of shape (N,D)
+    :returns: the energy contained in each principal component
+    """
+    # apply SVD 
+    U, S, Vh = np.linalg.svd(X)
+    N,D = X.shape
+    
+    S_squared = S * S
+    components_sum = np.sum(S_squared)
+    return S_squared / components_sum
