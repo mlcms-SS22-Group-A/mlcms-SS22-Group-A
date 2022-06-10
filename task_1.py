@@ -32,7 +32,7 @@ def center_data(X):
 
 def reduce_dim_pca(X, k):
     """
-    :param X: centered input data matrix X of shape (N,D)
+    :param X: input data matrix X of shape (N,D)
     :param k: the reduced dimension space 
     :returns: reduced data matrix X_reduced of shape (N,k)
     """
@@ -46,16 +46,16 @@ def reduce_dim_pca(X, k):
     # the lower dimension representation should be at least 1 
     assert trunc_cols > 0
     
-    U_trunc = U[:,:trunc_cols]
-    S_trunc = S[:trunc_cols]
+    U_trunc = U[:,:-trunc_cols]
+    S_trunc = S[:-trunc_cols]
     
-    X_reduced = U_trunc[:, :trunc_cols] * S_trunc
+    X_reduced = U_trunc[:, :k] * S_trunc
     
     return X_reduced
 
 def get_contained_energy_in_each_component(X):
     """
-    :param X: centered input data matrix X of shape (N,D)
+    :param X: input data matrix X of shape (N,D)
     :returns: the energy contained in each principal component
     """
     # apply SVD 
@@ -65,3 +65,41 @@ def get_contained_energy_in_each_component(X):
     S_squared = S * S
     components_sum = np.sum(S_squared)
     return S_squared / components_sum
+
+def approximate_pca(X, k):
+    """
+    :param X: input data matrix X of shape (N,D)
+    :param k: the reduced dimension space size
+    :returns: approximated data matrix X_reduced of shape (N,D) using only k - principal components
+    """
+    # apply SVD 
+    U, S, Vh = np.linalg.svd(X)
+    N,D = X.shape
+        
+    # number of columns that we want to truncate
+    trunc_cols = D - k
+    
+    # the lower dimension representation should be at least 1 
+    assert trunc_cols >= 0
+    
+    if trunc_cols == 0:
+        X_approxed = np.dot(U[:, :D] * S, Vh)
+        return X_approxed
+    
+    S_shaped_zeros = np.zeros(trunc_cols, dtype=np.float64)
+    S_trunc = S[:-trunc_cols]
+    S_ = np.concatenate((S_trunc, S_shaped_zeros), axis=0)
+    
+    X_approxed = np.dot(U[:, :D] * S_, Vh)
+    return X_approxed
+
+def get_energy_loss(X, k):
+    """
+    :param X: input data matrix X of shape (N,D) 
+    :param k: the reduced dimension space size
+    :returns: the energy loss in percentage 
+    """
+    N,D = X.shape
+    contained_energy_in_each_component = get_contained_energy_in_each_component(X)
+    kept_energy = np.sum(contained_energy_in_each_component[:k])
+    return 1 - kept_energy
