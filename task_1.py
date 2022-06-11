@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 
-def read_file(filename, column, header):
+def read_file_column(filename, column, header):
     """
     Reads the given 'pca_dataset.txt' file and returns a grouped pandas object, grouped by ""
 
@@ -56,7 +56,7 @@ def reduce_dim_pca(X, k):
 def get_contained_energy_in_each_component(X):
     """
     :param X: input data matrix X of shape (N,D)
-    :returns: the energy contained in each principal component
+    :returns: the percentage of the energy contained in each principal component
     """
     # apply SVD 
     U, S, Vh = np.linalg.svd(X)
@@ -100,6 +100,7 @@ def get_energy_loss(X, k):
     :returns: the energy loss in percentage 
     """
     N,D = X.shape
+    # get the percentage of the energy contained in each component
     contained_energy_in_each_component = get_contained_energy_in_each_component(X)
     kept_energy = np.sum(contained_energy_in_each_component[:k])
     return 1 - kept_energy
