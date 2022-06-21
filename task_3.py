@@ -102,6 +102,12 @@ class CVAE(tf.keras.Model):
 
     
 def log_normal_pdf(sample, mean, logvar, raxis=1):
+    """
+    pdf of the logarithm of the Gaussian distribution
+    :param sample: sample x to feed in the pdf 
+    :param mean: mean of the normal distribution
+    :param logvar: log(variance) of the normal distribution
+    """
     log2pi = tf.math.log(2. * np.pi)
     return tf.reduce_sum(
         -.5 * ((sample - mean) ** 2. * tf.exp(-logvar) + logvar + log2pi),
@@ -117,50 +123,23 @@ def compute_loss(model, x):
     We assume diagonal normal with zero mean and identity covar matrix for the prior p(z)
     """
     mean, logvar = model.encode(x)
-    
-    #plt.imshow(x.numpy()[1])
-    
     z = model.reparameterize(mean, logvar)
     x_logit = model.decode(z)
     
-    #plt.imshow(x_logit.numpy()[1])
     logpz = log_normal_pdf(z, 0., 0.)
     logqz_x = log_normal_pdf(z, mean, logvar)
-    
-    # MC estimate for the KL-divergence of q(x|z) to p(z)
-    #cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=x_logit, labels=x)
-    #MC estimate
-    #logpx_z = tf.reduce_sum(cross_ent, axis=[1, 2, 3])
-
-    #bce_loss = tf.reduce_mean(logpx_z)
     
     reconst_loss = -tf.reduce_mean(0.5 * ((x - x_logit) ** 2))
     x_re = tf.reshape(x, shape=(x.get_shape()[0], -1))
     x_logit_re = tf.reshape(x_logit, shape=(x_logit.get_shape()[0], -1))
     reconst_likelihood = -tf.reduce_mean(tf.square(x_re - x_logit_re)) * 1000
 
-    #print("shape x:", x.get_shape())
-    #print("shape x_logit:", x_logit.get_shape())
-    #print("shape x_re:", x_re.get_shape())
-    #print("shape x_logit_re:", x_logit_re.get_shape())
-        
     kl_div = tf.reduce_mean(logqz_x - logpz)
     
     elbo = reconst_likelihood - kl_div 
-    #elbo = -bce_loss - kl_div
     loss = -elbo
     
-    #raise ValueError("WAIT")
     return loss
-
-    cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=x_logit, labels=x)
-    #MC estimate
-    logpx_z = -tf.reduce_sum(cross_ent, axis=[1, 2, 3])
-    # Remark: logvariance is 0, the variance is identity for the prior
-    logpz = log_normal_pdf(z, 0., 0.)
-    logqz_x = log_normal_pdf(z, mean, logvar)
-    return -tf.reduce_mean(logpx_z + logpz - logqz_x)
-
 
 @tf.function
 def train_step(model, x, optimizer):
