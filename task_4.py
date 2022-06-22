@@ -4,6 +4,56 @@ import numpy as np
 import matplotlib.pyplot as plt
 import PIL
 
+# This method does not function completely correct, even if we try to generate millions of samples, we did not observe
+# exceed of the critical value in the region that is defined in the exercise sheet. We think this is related to the
+# issue that our model is not able to generate data very accurately.
+def check_critical_region(region, train_fireEvac, test_fireEvac, model, epoch, latent_dim, display):
+    """
+    This method starts at a value and checks whether the critical value is exceeded in the given region.
+    @param region: The region in which the number of pedestrians should not go higher than critical value of 100.
+    @param train_fireEvac: training set
+    @param test_fireEvac: test set
+    @param model: nn that is used
+    @param epoch: current epoch
+    @param latent_dim: dimension of latent space
+    @param display: display on which we plot
+    @return: number of pedestrians, at which the generation concludes exceed of the critical value in the given region
+    """
+    threshold = 1000000000
+    num_samples = 10000000
+
+    # normalize region boundaries
+    concat = np.concatenate((train_fireEvac, test_fireEvac))
+    concat = np.concatenate((concat, region))
+    concat = preprocess_data(concat, -1, 1)
+    region = np.reshape(concat[-2:], (4,))
+
+    # run until we exceed the critical number of pedestrian in the critical region
+    while num_samples < threshold:
+        print("Generating", num_samples, "samples:")
+        # generate data
+        generated_data = generate_and_save_images(model, epoch, num_samples, latent_dim)
+        # check if critical area exceeds 100 people
+        exceeds = False
+
+        exceeded_people = 0
+        # check whether sample is within the rectangle
+        for sample in generated_data:
+            if region[0] <= sample[0] <= region[1] and region[2] <= sample[1] <= region[3]:
+                exceeded_people += 1
+
+        # if number of people in rectangle over 100, we have found the limit
+        exceeds |= exceeded_people > 100
+
+        # find the number of pedestrians where the generation sample exceeds critical value
+        if exceeds:
+            print("exceeded at" + str(num_samples) + "ped generation")
+            return num_samples
+
+        display.clear_output(wait=False)
+        num_samples += 1
+
+
 def preprocess_data(data_set, target_min, target_max):
     """
     Preprocess the data to normalize into [min,max]
@@ -14,10 +64,10 @@ def preprocess_data(data_set, target_min, target_max):
     data_max = np.max(data_set)
     data_min = np.min(data_set)
 
-    data_set = data_set - data_min # normalize to (0, data_max - data_min)
-    data_set /= (data_max - data_min) # normalize to (0,1)
-    data_set *= (target_max - target_min) # normalize (0, target_max - target_min)
-    data_set += target_min # to (target_min, target_max)
+    data_set = data_set - data_min  # normalize to (0, data_max - data_min)
+    data_set /= (data_max - data_min)  # normalize to (0,1)
+    data_set *= (target_max - target_min)  # normalize (0, target_max - target_min)
+    data_set += target_min  # to (target_min, target_max)
     data_set = data_set.astype("float32")
     return data_set
 
@@ -37,25 +87,31 @@ class CVAE(tf.keras.Model):
         super(CVAE, self).__init__()
         self.latent_dim = latent_dim
         self.encoder = tf.keras.Sequential(
-            [ 
+            [
                 tf.keras.layers.InputLayer(input_shape=(2,), name="encoder_input"),
-                tf.keras.layers.Dense(units=512, activation=tf.keras.activations.relu, name="encoder_fully_connected_hidden_layer_1"), 
-                tf.keras.layers.Dense(units=512, activation=tf.keras.activations.relu, name="encoder_fully_connected_hidden_layer_2"),
-                tf.keras.layers.Dense(units=512, activation=tf.keras.activations.tanh, name="encoder_fully_connected_hidden_layer_3"),
+                tf.keras.layers.Dense(units=512, activation=tf.keras.activations.relu,
+                                      name="encoder_fully_connected_hidden_layer_1"),
+                tf.keras.layers.Dense(units=512, activation=tf.keras.activations.relu,
+                                      name="encoder_fully_connected_hidden_layer_2"),
+                tf.keras.layers.Dense(units=512, activation=tf.keras.activations.tanh,
+                                      name="encoder_fully_connected_hidden_layer_3"),
                 # BI DE SUNU DENEYEBILIR MIYIM
-                tf.keras.layers.Dense(units=latent_dim+latent_dim, activation=None, name="encoder_output"), 
+                tf.keras.layers.Dense(units=latent_dim + latent_dim, activation=None, name="encoder_output"),
             ]
         )
 
         self.decoder = tf.keras.Sequential(
             [
                 tf.keras.layers.InputLayer(input_shape=(latent_dim,), name="decoder_input"),
-                tf.keras.layers.Dense(units=512, activation=tf.keras.activations.relu, name="decoder_fully_connected_hidden_layer_1"),
-                tf.keras.layers.Dense(units=512, activation=tf.keras.activations.relu, name="decoder_fully_connected_hidden_layer_2"),
-                tf.keras.layers.Dense(units=512, activation=tf.keras.activations.tanh, name="decoder_fully_connected_hidden_layer_3"),
+                tf.keras.layers.Dense(units=512, activation=tf.keras.activations.relu,
+                                      name="decoder_fully_connected_hidden_layer_1"),
+                tf.keras.layers.Dense(units=512, activation=tf.keras.activations.relu,
+                                      name="decoder_fully_connected_hidden_layer_2"),
+                tf.keras.layers.Dense(units=512, activation=tf.keras.activations.tanh,
+                                      name="decoder_fully_connected_hidden_layer_3"),
                 tf.keras.layers.Dense(units=2, activation=None, name="decoder_output"),
                 tf.keras.layers.Reshape(target_shape=(2,)),
-            ] 
+            ]
         )
 
     @tf.function
@@ -65,7 +121,7 @@ class CVAE(tf.keras.Model):
         """
         if eps is None:
             eps = tf.random.normal(shape=(100, self.latent_dim))
-        #return self.decode(eps, apply_sigmoid=True)
+        # return self.decode(eps, apply_sigmoid=True)
         return self.decode(eps)
 
     def encode(self, x):
@@ -104,7 +160,7 @@ class CVAE(tf.keras.Model):
             return probs
         return logits
 
-    
+
 def log_normal_pdf(sample, mean, logvar, raxis=1):
     """
     pdf of the logarithm of the Gaussian distribution
@@ -118,7 +174,7 @@ def log_normal_pdf(sample, mean, logvar, raxis=1):
         axis=raxis)
 
 
-def compute_loss(model, x): # lan burda ayni mi oluyor acaba loss
+def compute_loss(model, x):  # lan burda ayni mi oluyor acaba loss
     """
     log(p(x)) >= ELBO = MC estimate of log(p(x|z)) + log(p(z)) - log(q(z|x))
     where we can compute the log probabilities of the distributions that we have assumed. 
@@ -129,23 +185,24 @@ def compute_loss(model, x): # lan burda ayni mi oluyor acaba loss
     mean, logvar = model.encode(x)
     z = model.reparameterize(mean, logvar)
     x_logit = model.decode(z)
-    
+
     logpz = log_normal_pdf(z, 0., 0.)
     logqz_x = log_normal_pdf(z, mean, logvar)
-    
+
     reconst_loss = -tf.reduce_mean(0.5 * ((x - x_logit) ** 2))
     x_re = tf.reshape(x, shape=(x.get_shape()[0], -1))
     x_logit_re = tf.reshape(x_logit, shape=(x_logit.get_shape()[0], -1))
     reconst_likelihood = -tf.reduce_mean(tf.square(x_re - x_logit_re)) * 1000
 
     kl_div = tf.reduce_mean(logqz_x - logpz)
-    
-    elbo = reconst_likelihood - kl_div # HELP MEE, ya dur yaa :*( aha bak olcak.. az kaldi   
+
+    elbo = reconst_likelihood - kl_div  # HELP MEE, ya dur yaa :*( aha bak olcak.. az kaldi
     loss = -elbo
-    
+
     # GENERATION ERROR COK FAZLA AMINA KOYACAM BISI DENICEM
-    
+
     return loss
+
 
 @tf.function
 def train_step(model, x, optimizer):
@@ -157,10 +214,11 @@ def train_step(model, x, optimizer):
     with tf.GradientTape() as tape:
         loss = compute_loss(model, x)
     gradients = tape.gradient(loss, model.trainable_variables)
-    optimizer.apply_gradients(zip(gradients, model.trainable_variables))  
-    return loss    
+    optimizer.apply_gradients(zip(gradients, model.trainable_variables))
+    return loss
 
-def reconstruct_and_save_images(model, epoch, test_sample, image_name_prefix=""): 
+
+def reconstruct_and_save_images(model, epoch, test_sample, image_name_prefix=""):
     """
     Reconstruct the given test images, plot and save them.
     :param model: Variational autoencoder
@@ -170,15 +228,15 @@ def reconstruct_and_save_images(model, epoch, test_sample, image_name_prefix="")
     """
     mean, logvar = model.encode(test_sample)
     z = model.reparameterize(mean, logvar)
-    predictions = model.decode(z) 
-    plt.figure() 
-    plt.scatter(predictions[:, 0], predictions[:, 1]) 
+    predictions = model.decode(z)
+    plt.figure()
+    plt.scatter(predictions[:, 0], predictions[:, 1])
     plt.xlabel("x")
     plt.ylabel("y")
     # tight_layout minimizes the overlap between 2 sub-plots
     plt.savefig('./figures/TASK-4/TASK-4-reconstructions_at_epoch_{:04d}.png'.format(epoch))
     plt.show()
-    
+
 
 def sample_z(latent_dim, num_images_to_generate):
     """
@@ -193,7 +251,7 @@ def sample_z(latent_dim, num_images_to_generate):
         for dim in range(latent_dim):
             # sample each latent dimension seperately (iid assumption)
             samples.append(tf.random.normal(shape=(1,)))
-        
+
     return np.reshape(np.array(samples), (num_images_to_generate, latent_dim))
 
 
@@ -207,7 +265,7 @@ def generate_and_save_images(model, epoch, num_images_to_generate, latent_dim, i
     :param image_name_prefix: prefix of the saved image name (optional)
     """
     # For this subtask we will first sample random latent variables (for 16 images)    
-    z = sample_z(latent_dim, 1000) # generate 1000 latent vars
+    z = sample_z(latent_dim, 1000)  # generate 1000 latent vars
 
     # generate predictions 
     predictions = model.decode(z)
@@ -219,6 +277,7 @@ def generate_and_save_images(model, epoch, num_images_to_generate, latent_dim, i
     plt.savefig('./figures/TASK-4/TASK-4-generations_at_epoch_{:04d}.png'.format(epoch))
     plt.show()
     return predictions
+
 
 def plot_and_save_loss_curves(history_dict, epoch, image_name_prefix=""):
     """
@@ -237,10 +296,5 @@ def plot_and_save_loss_curves(history_dict, epoch, image_name_prefix=""):
     plt.ylabel(r'$-\mathcal{L}_{ELBO}$')
     plt.savefig('./figures/TASK-4/TASK-4_loss_curves_till_epoch_{:04d}.png'.format(epoch))
     plt.show()
-    
-    
-    
-    
-    
-    
+
     # ZAMAN YETMIYOR
