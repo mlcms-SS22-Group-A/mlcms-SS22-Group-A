@@ -66,7 +66,7 @@ def nonlinear_fit(x, f_x, num_rbf: int, eps_helper=0.05, cond=1e-2):
 
 
 def get_radial_basis_function(x_l_list, x, eps):
-    return np.array([np.exp(-(x_l - x) ** 2 / eps ** 2) for x_l in x_l_list]).T
+    return np.array([np.exp(-np.linalg.norm(x_l - x, axis=-1)**2 / eps**2) for x_l in x_l_list]).T
 
 
 def compute_function(x_l_list, x, eps, coefficient):

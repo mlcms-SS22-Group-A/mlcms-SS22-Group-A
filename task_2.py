@@ -13,7 +13,7 @@ def read_data(file_path):
     return np.loadtxt(file_path)
 
 
-def plot_phase_portrait_and_trajectory(A, X, Y, title, sol, figure_save_path, save_figure):
+def plot_phase_portrait_and_trajectory(A, X, Y, title, sol=None, figure_save_path="", save_figure=False):
     """
     Plots phase portrait and a trajectory on top of it
     @param A: Matrix that defines the evolution operator
@@ -32,7 +32,8 @@ def plot_phase_portrait_and_trajectory(A, X, Y, title, sol, figure_save_path, sa
     fig = plt.figure(figsize=(10, 10))
     ax0 = fig.add_subplot()
     ax0.streamplot(X, Y, U, V, density=[0.5, 1])
-    ax0.plot(sol.y[0], sol.y[1])
+    if sol is not None:
+        ax0.plot(sol.y[0], sol.y[1])
     ax0.set_title(title)
     ax0.set_aspect(1)
     if save_figure:
@@ -46,7 +47,7 @@ def mse(x_truth, x_prediction):
     @param x_prediction: Predicted/approximated data
     @return: MSE loss
     """
-    return np.mean(np.sum((x_truth - x_prediction) ** 2, axis=-1))
+    return np.mean(np.sum((x_truth - x_prediction)**2, axis=-1))
 
 
 def search_for_optimal_dt(dt_list, linear_vectorfield_x0, linear_vectorfield_x1):
