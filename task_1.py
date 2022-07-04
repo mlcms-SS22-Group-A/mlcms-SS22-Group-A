@@ -1,109 +1,104 @@
-from random import randint
 import numpy as np
-from scipy.linalg import lstsq
 import matplotlib.pyplot as plt
 
-def dataloader(dir):
+from sklearn.model_selection import train_test_split
+
+
+def read_and_split_function(file_path: str, test_size=0.2, random_state=42):
     """
-
-    :param dir: directory of text file
-    :return: return np array of data
+    Reads file and splits the data into training and test set
+    :param file_path: relative path to the file to be read, first column of the file should contain x values, followed
+    by a delimiter of a SPACE character, in the second column should be the function values of according x values
+    :param test_size: the percentage of the data that should be seperated as the test data
+    :param random_state: this is used to create the same output when shuffling the data
+    :returns x_train: x values of the train set
+            x_test: x values of the test set
+            f_x_train: function values of the train set
+            f_x_test: function values of the test set
     """
-    return np.loadtxt(dir)
+    # read file as a numpy array
+    function = np.loadtxt(file_path)
 
-def approximate_lstsq(X):
+    # split the x and f_x values from the two columns
+    x = function[:, 0]
+    f_x = function[:, 1]
+
+    # split data into train and test data
+    x_train, x_test, f_x_train, f_x_test = train_test_split(x, f_x, test_size=test_size, random_state=random_state)
+    return x_train, x_test, f_x_train, f_x_test
+
+
+def linear_fit(x, f_x, cond=1e-2):
     """
-
-    :param X: given data with x and y coordinates
-    :return: solution vector
+    Fits a linear function to the given x and function values
+    :param x: x values
+    :param f_x: function values of the given x values
+    :param cond: condition for the least squares method
+    :returns approximated function values of train data
+             residual: error between the approximated and original function values
     """
-    x = X[:, 0]
-    y = X[:, 1]
-    M = x[:, np.newaxis]
-    p, res, rnk, s = lstsq(M, y)
-    return p
+    # solve Ax = b where A = x and b = f_x, x will contain the coefficient m of linear function
+    solution = np.linalg.lstsq(x, f_x, cond)[0]
+    return x @ solution, solution
 
-def process_data_and_show(raw_data, approximation):
+
+def nonlinear_fit(x, f_x, num_rbf: int, eps_helper=0.05, cond=1e-2):
     """
-
-    :param raw_data: raw data matrix
-    :param approximation: approximation matrix
-    :return:
+    Fits a nonlinear function to the given x and function values
+    :param x: x values
+    :param f_x: function values of the given x values
+    :param num_rbf: number of radial functions to be used
+    :param eps_helper: helper for the bandwidth calculation
+    :param cond: condition for the least squares method
+    :returns approximated function values of train data
+             residual: error between the approximated and original function values
     """
-    plt.plot(raw_data[:, 0], raw_data[:, 1], 'o', label='data')
-    p = approximation
-    xx = np.linspace(np.amin(raw_data), np.amax(raw_data), 101)
-    yy = p[0] * xx
-    plt.plot(xx, yy, label='least squares fit, $y = Ax$')
-    plt.xlabel('x')
-    plt.ylabel('y')
-    plt.legend(framealpha=1, shadow=True)
-    plt.grid(alpha=0.25)
-    plt.show()
+    # linearly space num_rbf different x_l points
+    x_l_list = np.linspace(np.min(x), np.max(x), num_rbf)
+    # compute epsilon similarly to Diffusion Map algorithm
+    distance = np.linalg.norm(x[:, None] - x_l_list[None], axis=-1)
+    eps = eps_helper * np.max(distance)
+    # compute radial basis functions according to different x_ls and bandwidth
+    phi_l_list = get_radial_basis_function(x_l_list, x, eps)
+    # use the least squares solution to obtain coefficients of the radial basis functions
+    solution = np.linalg.lstsq(phi_l_list, f_x, cond)[0]
+    return phi_l_list @ solution, solution, x_l_list, eps
 
 
-def get_radial_function(x, epsilon):
+def get_radial_basis_function(x_l_list, x, eps):
+    return np.array([np.exp(-(x_l - x) ** 2 / eps ** 2) for x_l in x_l_list]).T
+
+
+def compute_function(x_l_list, x, eps, coefficient):
+    phi_l_list = get_radial_basis_function(x_l_list, x, eps)
+    return phi_l_list @ coefficient
+
+
+def plot_approximate_function(x_test, f_x_test, x_train, f_hat, figure_save_path: str, figure_title: str,
+                              save_figure=False):
     """
-
-    :param x: given data point, creates a radial basis function
-    :param epsilon: epsilon value, free searched
-    :return: returns the found basis function with created index l
+    Plots the approximated function on top of the test data to show the fit of the function to the dataset, prints out
+    the residual of the fit and saves the figure if requested
+    :param x_test: x values of the test set
+    :param f_x_test: function values of the test set
+    :param x_train: x values of the train set
+    :param f_hat: approximated function values of train data
+    :param figure_save_path: relative path to the location where the figure will be saved
+    :param figure_title: title of the figure
+    :param save_figure: boolean, if set to True, figure will be saved to the given figure_save_path parameter
     """
-    max_lim = x.shape[0]
-    ind = randint(0, max_lim)
-    column = np.empty(x.shape)
-    for i in range(0, x.shape[0]):
-        column[i] = np.exp(-np.linalg.norm(x[ind] - x[i]) / (2 * (epsilon ** 2)))
-    return column, ind
-
-def evaluate_func(xx, xl, epsilon):
-    """
-
-    :param xx: sample space
-    :param xl: the x value with which basis func created
-    :param epsilon:  epsilon
-    :return: evaluated result
-    """
-    y = np.empty(xx.shape)
-    for i in range(0, xx.shape[0]):
-        y[i] = np.exp(-np.linalg.norm(xl - xx[i]) / ( 2 * (epsilon ** 2)))
-    return y
-
-
-def approximate_with_radial_basisfunc(X, L=3, epsilon=0.5):
-    """
-
-    :param X: input data
-    :param L: number of basis functions
-    :param epsilon: epsilon
-    :return: plots the approximation with data itself.
-    """
-    x = X[:, 0]
-    y = X[:, 1]
-    columns = np.empty((L, x.shape[0]))
-    indices = np.empty(L)
-
-    for i in range(0, L):
-        column, ind = get_radial_function(x, epsilon)
-        columns[i] = column
-        indices[i] = ind
-
-    M = columns.T
-    p, res, rnk, s = lstsq(M, y)
-
-    L = p.shape[0]
-
-    xx = np.linspace(np.amin(x), np.amax(x), 101)
-    yy = np.zeros(xx.shape)
-    for i in range(0, L):
-        ind = int(indices[i])
-
-        yy += p[i] * evaluate_func(xx, x[ind], epsilon)
-
-    plt.plot(X[:, 0], X[:, 1], 'o', label='data')
-    plt.plot(xx, yy, label='least squares fit, with radial basis functions')
-    plt.xlabel('x')
-    plt.ylabel('y')
-    plt.legend(framealpha=1, shadow=True)
-    plt.grid(alpha=0.25)
-    plt.show()
+    # prepare the figure
+    plt.figure()
+    plt.title(figure_title)
+    plt.xlabel(r"$x$")
+    plt.ylabel(r"$f(x)$ / $\hat{f}(x)$")
+    # scatter the test data
+    plt.scatter(x_test, f_x_test)
+    # show the approximated function
+    x_train_sorted, f_hat_sorted = zip(*sorted(zip(x_train, f_hat)))
+    plt.plot(x_train_sorted, f_hat_sorted, c="orange")
+    # show the legend to label original and approximated data
+    plt.legend([r"$f(x)$", r"$\hat{f}(x)$"])
+    # save figure if necessary
+    if save_figure:
+        plt.savefig(figure_save_path)
