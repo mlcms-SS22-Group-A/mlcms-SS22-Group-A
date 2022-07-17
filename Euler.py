@@ -20,7 +20,8 @@ class Euler(pl.LightningModule):
         return x + self.hparams["delta_t"] * self.model(x)
 
     def training_step(self, batch):
-        pos, pos_target = batch
+        pos = batch[:, 0]
+        pos_target = batch[:, 1]
 
         pred = self.forward(pos.float())
 
