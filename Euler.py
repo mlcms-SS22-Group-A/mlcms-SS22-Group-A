@@ -13,42 +13,22 @@ class Euler(pl.LightningModule):
             torch.nn.LeakyReLU(),
             torch.nn.Linear(hparams["hidden_layer_2"], hparams["hidden_layer_3"]),
             torch.nn.LeakyReLU(),
-            torch.nn.Linear(hparams["hidden_layer_3"], 2),
-
-            # torch.nn.Linear(hparams["input_layer"], hparams["hidden_layer_1"]),
-            # torch.nn.LeakyReLU(),
-            # torch.nn.Linear(hparams["hidden_layer_1"], hparams["hidden_layer_2"]),
-            # torch.nn.LeakyReLU(),
-            # torch.nn.Linear(hparams["hidden_layer_2"], hparams["hidden_layer_3"]),
-            # torch.nn.LeakyReLU(),
-            # torch.nn.Linear(hparams["hidden_layer_3"], hparams["output_layer"]),
-        )
-        self.model = self.model.float()
+            torch.nn.Linear(hparams["hidden_layer_3"], 2)
+        ).float()
 
     def forward(self, x):
         return x + self.hparams["delta_t"] * self.model(x)
 
     def training_step(self, batch):
-        traj, traj_shifted = batch[0]
+        pos, pos_target = batch
 
-        # x_traj = traj[]
-
-        x = torch.flatten(traj)
-        y = torch.flatten(traj_shifted)
-
-        # traj = batch["traj"]
-        # target = batch["traj_shifted"]
-
-        pred = self.forward(x.float())#.view(self.hparams["num_datapoints"],2)
+        pred = self.forward(pos.float())
 
         loss_fn = torch.nn.MSELoss()
-        return loss_fn(pred, y.float())
+        loss = loss_fn(pred, pos_target.float())
+        self.log("loss", loss)
+        return loss
 
     def configure_optimizers(self):
-        optim = torch.optim.Adam(self.model.parameters(),
-            self.hparams["learning_rate"],
-            weight_decay=self.hparams["weight_decay"]
-        )
-        # StepLR = torch.optim.lr_scheduler.MultiStepLR(optim, milestones=[30], gamma=0.5)
-        return optim
+        return torch.optim.Adam(self.model.parameters(), self.hparams["learning_rate"])
 
