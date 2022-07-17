@@ -7,13 +7,21 @@ class Euler(pl.LightningModule):
         super().__init__()
         self.save_hyperparameters(hparams)
         self.model = torch.nn.Sequential(
-            torch.nn.Linear(hparams["input_layer"], hparams["hidden_layer_1"]),
+            torch.nn.Linear(2, hparams["hidden_layer_1"]),
             torch.nn.LeakyReLU(),
             torch.nn.Linear(hparams["hidden_layer_1"], hparams["hidden_layer_2"]),
             torch.nn.LeakyReLU(),
             torch.nn.Linear(hparams["hidden_layer_2"], hparams["hidden_layer_3"]),
             torch.nn.LeakyReLU(),
-            torch.nn.Linear(hparams["hidden_layer_3"], hparams["output_layer"]),
+            torch.nn.Linear(hparams["hidden_layer_3"], 2),
+
+            # torch.nn.Linear(hparams["input_layer"], hparams["hidden_layer_1"]),
+            # torch.nn.LeakyReLU(),
+            # torch.nn.Linear(hparams["hidden_layer_1"], hparams["hidden_layer_2"]),
+            # torch.nn.LeakyReLU(),
+            # torch.nn.Linear(hparams["hidden_layer_2"], hparams["hidden_layer_3"]),
+            # torch.nn.LeakyReLU(),
+            # torch.nn.Linear(hparams["hidden_layer_3"], hparams["output_layer"]),
         )
         self.model = self.model.float()
 
@@ -22,6 +30,8 @@ class Euler(pl.LightningModule):
 
     def training_step(self, batch):
         traj, traj_shifted = batch[0]
+
+        # x_traj = traj[]
 
         x = torch.flatten(traj)
         y = torch.flatten(traj_shifted)
