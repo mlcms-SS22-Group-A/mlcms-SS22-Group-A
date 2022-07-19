@@ -30,7 +30,7 @@ def generate_dataset(alpha, delta_t, range_start, range_end, t_start, t_end, num
     sols = []
     for start_position in start_positions:
         sol = scipy.integrate.solve_ivp(lambda t, y: get_derivatives(y[0], y[1], alpha), 
-                                        (t_start - 1, t_end + 1) , start_position, t_eval=t_eval)
+                                        (t_start, t_end + 1) , start_position, t_eval=t_eval)
         # we only need the solution vectors
         sols.append(sol.y)
     
