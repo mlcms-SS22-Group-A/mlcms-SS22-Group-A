@@ -2,7 +2,9 @@ import math
 import torch
 import numpy as np
 import matplotlib.pyplot as plt
-import scipy.integrate
+
+from scipy.integrate import solve_ivp
+from torch.utils.data import DataLoader
 
 
 def andronov_hopf(x1, x2, alpha):
@@ -14,9 +16,8 @@ def create_dataset(alpha, t_eval, num_samples):
     sols = []
 
     for start_position in start_positions:
-        sol = scipy.integrate.solve_ivp(lambda t, y: andronov_hopf(y[0], y[1], alpha), (0, 10), start_position,
-                                        t_eval=t_eval)
-        sols.append(sol["y"])
+        sol = solve_ivp(lambda t, y: andronov_hopf(y[0], y[1], alpha), (0, 5), start_position, t_eval=t_eval)
+        sols.append(sol.y)
 
     return np.array(sols)
 
@@ -42,17 +43,14 @@ def split_dataset(dataset, train_size, val_size, test_size):
 
 
 def evaluate_model(model, dataset, hparams, device):
-    """
-    TODO
-    """
     model.eval()
     model.to(device)
     criterion = torch.nn.MSELoss()
-    dataloader = torch.utils.data.DataLoader(dataset, batch_size=hparams["batch_size"], shuffle=False)
+    dataloader = DataLoader(dataset, batch_size=hparams["batch_size"], shuffle=False)
     loss = 0
     for batch in dataloader:
-        pos = batch[:, 0]
-        pos_target = batch[:, 1]
+        pos = batch[:, 0].to(device)
+        pos_target = batch[:, 1].to(device)
 
         pred = model.forward(pos.float()).to(device)
 
@@ -61,31 +59,42 @@ def evaluate_model(model, dataset, hparams, device):
 
 
 def recreate_trajectory(model, start_position, t_start, t_end, delta_t, device):
-    """
-    TODO
-    """
     trajectory = [start_position]
     last_traj = torch.tensor(start_position)
     last_traj = last_traj.to(device)
     t0 = t_start
 
-    while t0 < t_end - delta_t:
+    while t0 < t_end:
         last_traj = model.forward(last_traj.float())
         trajectory.append(last_traj.detach().numpy())
-        t0 += delta_t
+        t0 = round(t0 + delta_t, 2)
 
-    return trajectory
+    return np.array(trajectory)
 
 
-def bok_püsür(sols, t_eval):
-    # plot both trajectories in 3D
-    fig = plt.figure(figsize=(10, 10))
+def plot_trajectory(sol, t_eval):
+    plt.figure(figsize=(10, 10))
     ax0 = plt.axes(projection="3d")
-    ax0.plot(t_eval, sols[0][0], sols[0][1], label=r"Trajectory with starting point $(-3, -3)$", color="r")
+    ax0.plot(t_eval, sol[:, 0], sol[:, 1], color="r")
 
-    ax0.set_xlabel(r"$t$")
-    ax0.set_ylabel(r"$x_1$")
-    ax0.set_zlabel(r"$x_2$")
+    ax0.set_xlabel(r"$t$", fontsize=20)
+    ax0.set_ylabel(r"$x_1$", fontsize=20)
+    ax0.set_zlabel(r"$x_2$", fontsize=20)
 
-    print("FIRST VALUE: ", sols[0][0][0], sols[0][1][0])
-    print("LAST VALUE: ", sols[0][0][-1], sols[0][1][-1])
+
+def compute_and_plot_phase_portrait(model, delta_t):
+    positions = np.empty((40, 40, 2))
+    next_positions = np.empty((40, 40, 2))
+    for idx1, i in enumerate(np.linspace(-2, 2, 40)):
+        for idx2, j in enumerate(np.linspace(-2, 2, 40)):
+            positions[idx1][idx2] = np.array((i, j))
+            position = torch.tensor((i, j))
+            next_positions[idx1][idx2] = (model(position.float())).detach().numpy()
+    derivatives = (next_positions - positions) / delta_t
+
+    fig = plt.figure(figsize=(25, 25))
+    ax = fig.add_subplot()
+    ax.quiver(positions[:, :, 0], positions[:, :, 1], derivatives[:, :, 0], derivatives[:, :, 1], units="xy", scale=7.5)
+    ax.set_title(r"Phase portrait of Andronov Hopf Bifurcation", fontsize=24)
+    ax.set_xlabel(r"$x_1$", fontsize=20)
+    ax.set_ylabel(r"$x_2$", fontsize=20)
