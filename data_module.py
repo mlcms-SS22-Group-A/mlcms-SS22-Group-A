@@ -72,8 +72,8 @@ def recreate_trajectory(model, start_position, t_start, t_end, delta_t, device):
     return np.array(trajectory)
 
 
-def plot_trajectory(sol, t_eval):
-    plt.figure(figsize=(10, 10))
+def plot_trajectory(sol, t_eval, save_fig=False, figure_save_path=""):
+    fig = plt.figure(figsize=(10, 10))
     ax0 = plt.axes(projection="3d")
     ax0.plot(t_eval, sol[:, 0], sol[:, 1], color="r")
 
@@ -81,8 +81,11 @@ def plot_trajectory(sol, t_eval):
     ax0.set_ylabel(r"$x_1$", fontsize=20)
     ax0.set_zlabel(r"$x_2$", fontsize=20)
 
+    if save_fig:
+        fig.savefig(figure_save_path)
 
-def compute_and_plot_phase_portrait(model, delta_t):
+
+def compute_and_plot_phase_portrait(model, delta_t, save_fig=False, figure_save_path=""):
     positions = np.empty((40, 40, 2))
     next_positions = np.empty((40, 40, 2))
     for idx1, i in enumerate(np.linspace(-2, 2, 40)):
@@ -98,3 +101,6 @@ def compute_and_plot_phase_portrait(model, delta_t):
     ax.set_title(r"Phase portrait of Andronov Hopf Bifurcation", fontsize=24)
     ax.set_xlabel(r"$x_1$", fontsize=20)
     ax.set_ylabel(r"$x_2$", fontsize=20)
+
+    if save_fig:
+        fig.savefig(figure_save_path)
