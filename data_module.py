@@ -35,9 +35,10 @@ def create_dataset(t_eval, num_samples):
 
     # for each start position create trajectory using solve_ivp
     for idx, start_position in enumerate(start_positions):
-        sol = solve_ivp(lambda t, y: andronov_hopf(y[0], y[1], alphas[idx]), (0, 10), start_position, t_eval=t_eval)
+        sol = solve_ivp(lambda t, y: andronov_hopf(y[0], y[1], alphas[idx % len(alphas)]), (0, 10), start_position,
+                        t_eval=t_eval)
         sols.append(sol.y)
-        sol_alphas.append([alphas[idx] for _ in range(len(sol.y[0]))])
+        sol_alphas.append([alphas[idx % len(alphas)] for _ in range(len(sol.y[0]))])
 
     return np.array(sols), np.array(sol_alphas)
 
@@ -179,9 +180,31 @@ def compute_and_plot_phase_portrait(model, alpha, save_fig=False, figure_save_pa
     fig = plt.figure(figsize=(25, 25))
     ax = fig.add_subplot()
     ax.quiver(positions[:, :, 0], positions[:, :, 1], derivatives[:, :, 0], derivatives[:, :, 1], units="xy", scale=7.5)
-    ax.set_title(r"Phase portrait of Andronov Hopf Bifurcation", fontsize=24)
+    ax.set_title(r"Phase portrait of Andronov Hopf Bifurcation estimated by our model for $\alpha = $" + str(alpha),
+                 fontsize=24)
     ax.set_xlabel(r"$x_1$", fontsize=20)
     ax.set_ylabel(r"$x_2$", fontsize=20)
 
     if save_fig:
         fig.savefig(figure_save_path)
+
+
+def compute_and_plot_bifurcation_diagram(model, delta_t, save_fig=False, figure_save_path=""):
+    alphas = np.linspace(-2, 2, 41)
+    steady_states = []
+    for alpha in alphas:
+        steady_states_current_alpha = []
+        for idx1, i in enumerate(np.linspace(-2, 2, 5)):
+            for idx2, j in enumerate(np.linspace(-2, 2, 5)):
+                position = torch.tensor([[i, j, alpha]])
+                counter = 0
+                while True and (counter < 100):
+                    derivative = model.forward(position.float())
+                    if np.linalg.norm(np.array(derivative.detach().numpy().reshape(-1))) < 1e-3:
+                        break
+                    position[:, :2] += delta_t * derivative
+                    counter += 1
+                steady_states_current_alpha.append(np.round(position[:, :2].detach().numpy().reshape(-1), 1).tolist())
+        steady_states.append(np.array(set(tuple(x) for x in steady_states_current_alpha)))
+
+    return alphas, np.array(steady_states)
