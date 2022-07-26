@@ -7,7 +7,7 @@ class RungeKutta(pl.LightningModule):
         super().__init__()
         self.save_hyperparameters(hparams)
         self.model = torch.nn.Sequential(
-            torch.nn.Linear(2, hparams["hidden_layer_1"]),
+            torch.nn.Linear(3, hparams["hidden_layer_1"]),
             torch.nn.LeakyReLU(),
             torch.nn.Linear(hparams["hidden_layer_1"], hparams["hidden_layer_2"]),
             torch.nn.LeakyReLU(),
@@ -17,18 +17,19 @@ class RungeKutta(pl.LightningModule):
         ).float()
 
     def forward(self, x):
+        alpha = torch.reshape(x[:, 2], (x.shape[0], 1))
         delta_t = self.hparams["delta_t"]
         k0 = self.model(x)
-        k1 = self.model(x + 0.5 * delta_t * k0)
-        k2 = self.model(x + 0.5 * delta_t * k1)
-        k3 = self.model(x + delta_t * k2)
-        return x + (1/6) * delta_t * (k0 + 2 * k1 + 2 * k2 + k3)
+        k1 = self.model(torch.cat((x[:, :2] + 0.5 * delta_t * k0, alpha), 1))
+        k2 = self.model(torch.cat((x[:, :2] + 0.5 * delta_t * k1, alpha), 1))
+        k3 = self.model(torch.cat((x[:, :2] + delta_t * k2, alpha), 1))
+        return (1/6) * (k0 + 2 * k1 + 2 * k2 + k3)
 
     def training_step(self, batch):
-        pos = batch[:, 0]
-        pos_target = batch[:, 1]
+        pos = batch[:, :3]
+        pos_target = batch[:, 3:]
 
-        pred = self.forward(pos.float())
+        pred = pos.float()[:, :2] + self.hparams["delta_t"] * self.forward(pos.float())
 
         loss_fn = torch.nn.MSELoss()
         loss = loss_fn(pred, pos_target.float())
