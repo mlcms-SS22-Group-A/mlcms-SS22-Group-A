@@ -38,6 +38,6 @@ class RungeKutta(pl.LightningModule):
 
     def configure_optimizers(self):
         optim = torch.optim.Adam(self.model.parameters(), self.hparams["learning_rate"])
-        lr_scheduler = torch.optim.lr_scheduler.StepLR(optim, 20, gamma=0.75)
+        lr_scheduler = torch.optim.lr_scheduler.StepLR(optim, 25, gamma=0.75)
         return {"optimizer": optim, "lr_scheduler": lr_scheduler}
 

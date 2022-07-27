@@ -235,6 +235,7 @@ def plot_bifurcation_diagram(alphas, steady_states, fig_title, save_fig=False, f
     fig = plt.figure(figsize=(10, 10))
     ax = fig.add_subplot(projection="3d")
 
+    # https://stackoverflow.com/a/34280815
     for x, y in zip(alphas, steady_states):
         ax.scatter([x] * len(y), y[:, 0], y[:, 1], c="b")
 
