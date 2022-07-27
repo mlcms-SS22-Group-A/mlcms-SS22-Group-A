@@ -138,11 +138,12 @@ def recreate_trajectory(model, start_position, t_start, t_end, delta_t, device):
     return np.array(trajectory)
 
 
-def plot_trajectory(sol, t_eval, save_fig=False, figure_save_path=""):
+def plot_trajectory(sol, t_eval, fig_title, save_fig=False, figure_save_path=""):
     """
     plots a given trajectory in a given timespan
     @param sol: trajectory to be plotted
     @param t_eval: timespan
+    @param fig_title: title of the figure
     @param save_fig: boolean, if set to True, figure will be saved
     @param figure_save_path: save path for figure
     """
@@ -151,6 +152,7 @@ def plot_trajectory(sol, t_eval, save_fig=False, figure_save_path=""):
     ax0 = plt.axes(projection="3d")
     ax0.plot(t_eval, sol[:, 0], sol[:, 1], color="r")
 
+    ax0.set_title(fig_title, fontsize=24)
     ax0.set_xlabel(r"$t$", fontsize=20)
     ax0.set_ylabel(r"$x_1$", fontsize=20)
     ax0.set_zlabel(r"$x_2$", fontsize=20)
@@ -159,11 +161,12 @@ def plot_trajectory(sol, t_eval, save_fig=False, figure_save_path=""):
         fig.savefig(figure_save_path)
 
 
-def compute_and_plot_phase_portrait(model, alpha, save_fig=False, figure_save_path=""):
+def compute_and_plot_phase_portrait(model, alpha, fig_title, save_fig=False, figure_save_path=""):
     """
     computes and plots phase portrait
     @param model: nn model
-    @param alpha:
+    @param alpha: parameter of dynamical system
+    @param fig_title: title of the figure
     @param save_fig: boolean, if set to True, figure will be saved
     @param figure_save_path: save path for figure
     """
@@ -180,8 +183,7 @@ def compute_and_plot_phase_portrait(model, alpha, save_fig=False, figure_save_pa
     fig = plt.figure(figsize=(25, 25))
     ax = fig.add_subplot()
     ax.quiver(positions[:, :, 0], positions[:, :, 1], derivatives[:, :, 0], derivatives[:, :, 1], units="xy", scale=7.5)
-    ax.set_title(r"Phase portrait of Andronov Hopf Bifurcation estimated by our model for $\alpha = $" + str(alpha),
-                 fontsize=24)
+    ax.set_title(fig_title, fontsize=24)
     ax.set_xlabel(r"$x_1$", fontsize=20)
     ax.set_ylabel(r"$x_2$", fontsize=20)
 
@@ -189,22 +191,57 @@ def compute_and_plot_phase_portrait(model, alpha, save_fig=False, figure_save_pa
         fig.savefig(figure_save_path)
 
 
-def compute_and_plot_bifurcation_diagram(model, delta_t, save_fig=False, figure_save_path=""):
+def compute_bifurcation_diagram(model, delta_t):
+    """
+    computes steady states of the system over a range of alpha values by starting trajectories at random positions and
+    letting them converge (update of the positions over time is made by trained nn models)
+    @param model: nn model used in the integration
+    @param delta_t: timestep of integration
+    @return alphas: range of alpha values
+            steady_states: set of steady state for each alpha value in alphas list
+    """
     alphas = np.linspace(-2, 2, 41)
     steady_states = []
     for alpha in alphas:
         steady_states_current_alpha = []
-        for idx1, i in enumerate(np.linspace(-2, 2, 5)):
-            for idx2, j in enumerate(np.linspace(-2, 2, 5)):
+        for idx1, i in enumerate(np.linspace(-2, 2, 10)):
+            for idx2, j in enumerate(np.linspace(-2, 2, 10)):
                 position = torch.tensor([[i, j, alpha]])
                 counter = 0
                 while True and (counter < 100):
+                    # predict the derivative at current position
                     derivative = model.forward(position.float())
+                    # convergence check
                     if np.linalg.norm(np.array(derivative.detach().numpy().reshape(-1))) < 1e-3:
                         break
                     position[:, :2] += delta_t * derivative
                     counter += 1
                 steady_states_current_alpha.append(np.round(position[:, :2].detach().numpy().reshape(-1), 1).tolist())
-        steady_states.append(np.array(set(tuple(x) for x in steady_states_current_alpha)))
+        # we cumulate steady states in a set to avoid multiple occurrence of a steady state multiple times
+        steady_states.append(np.array(list(set(tuple(x) for x in steady_states_current_alpha))))
 
     return alphas, np.array(steady_states)
+
+
+def plot_bifurcation_diagram(alphas, steady_states, fig_title, save_fig=False, fig_save_path=""):
+    """
+    plots the computed bifurcation diagram
+    @param alphas: values at which steady states are calculated
+    @param steady_states: steady states of the system
+    @param fig_title: title of the figure
+    @param save_fig: boolean, if set to True, figure will be saved
+    @param fig_save_path: save path for figure
+    """
+    fig = plt.figure(figsize=(10, 10))
+    ax = fig.add_subplot(projection="3d")
+
+    for x, y in zip(alphas, steady_states):
+        ax.scatter([x] * len(y), y[:, 0], y[:, 1], c="b")
+
+    ax.set_title(fig_title, fontsize=24)
+    ax.set_xlabel(r"$\alpha$", fontsize=20)
+    ax.set_ylabel(r"$x_1$", fontsize=20)
+    ax.set_zlabel(r"$x_2$", fontsize=20)
+
+    if save_fig:
+        fig.savefig(fig_save_path)
